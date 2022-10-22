@@ -86,7 +86,7 @@ end)
 CreateThread(function()
     while true do
         Wait(1000)
-        inRange = false
+        local inRange = false
         local pos = GetEntityCoords(PlayerPedId())
         local vehicle = QBCore.Functions.GetClosestVehicle()
         local vehCoords = GetEntityCoords(vehicle)
@@ -119,8 +119,8 @@ CreateThread(function()
     
     exports[Config.Target]:AddTargetBone(bones, {
         options = {
-            { 
-                type = 'client', 
+            {
+                type = 'client',
                 event = 'brazzers-fakeplates:client:removePlate',
                 icon = 'fas fa-closed-captioning',
                 label = 'Remove Plate',
@@ -131,6 +131,6 @@ CreateThread(function()
                 end,
             }
         },
-        distance = 2.5, 
+        distance = 2.5,
     })
 end)

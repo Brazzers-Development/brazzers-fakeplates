@@ -27,7 +27,7 @@ local function isFakePlateOnVehicle(plate)
 end
 
 local function getPlateFromFakePlate(fakeplate)
-    local result = MySQL.scalar.await('SELECT * FROM player_vehicles WHERE fakeplate = ?', {plate})
+    local result = MySQL.scalar.await('SELECT * FROM player_vehicles WHERE fakeplate = ?', {fakeplate})
     if result then
         return result[1].plate
     end
@@ -79,7 +79,7 @@ RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehicle, veh
     local originalPlate = getPlateFromFakePlate(vehPlate)
     if not originalPlate then return end
 
-    MySQL.update('UPDATE player_vehicles set fakeplate = ? WHERE plate = ?',{NULL, originalPlate})
+    MySQL.update('UPDATE player_vehicles set fakeplate = ? WHERE plate = ?',{, originalPlate})
     TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, originalPlate)
     if hasKeys then
         TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, originalPlate)
@@ -92,7 +92,7 @@ QBCore.Functions.CreateCallback('brazzers-fakeplates:server:checkPlateStatus', f
     local retval = false
     local result = MySQL.query.await('SELECT fakeplate FROM player_vehicles WHERE fakeplate = ?', { vehPlate })
     if result then
-        for k, v in pairs(result) do
+        for _, v in pairs(result) do
             if vehPlate == v.fakeplate then
                 retval = true
             end
