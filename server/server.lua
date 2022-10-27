@@ -1,7 +1,5 @@
 local QBCore = exports[Config.Core]:GetCoreObject()
 
-local fakePlateVehicles = {}
-
 -- Functions
 
 local function GeneratePlate()
@@ -54,24 +52,12 @@ RegisterNetEvent('brazzers-fakeplates:server:usePlate', function(vehicle, vehPla
 
     if isFakePlateOnVehicle(vehPlate) then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.already_has_plate"), 'error') end
     if not isVehicleOwned(vehPlate) then
-        if hasKeys then
-            if not fakePlateVehicles[vehicle] then
-                fakePlateVehicles[vehicle] = {
-                    plate = nil,
-                    fakeplate = nil,
-                }
-            end
+        if not hasKeys then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.no_keys"), 'error') end
 
-            if fakePlateVehicles[vehicle].fakeplate then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.already_has_plate"), 'error') end
-
-            fakePlateVehicles[vehicle].plate = vehPlate
-            fakePlateVehicles[vehicle].fakeplate = newPlate
-
-            TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, newPlate)
-            TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, newPlate)
-            Player.Functions.RemoveItem('fakeplate', 1)
-            return
-        end
+        TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, newPlate)
+        TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, newPlate)
+        Player.Functions.RemoveItem('fakeplate', 1)
+        return
     end
 
     MySQL.update('UPDATE player_vehicles set fakeplate = ? WHERE plate = ?',{newPlate, vehPlate})
@@ -93,23 +79,12 @@ RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehicle, veh
     if not src then return end
     if not vehicle or not vehPlate then return end
 
-    if not isVehicleOwned(vehPlate) then
-        if hasKeys then
-            if not fakePlateVehicles[vehicle].fakeplate then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.does_not_have_fakeplate"), 'error') end
-
-            fakePlateVehicles[vehicle].fakeplate = nil
-            TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, fakePlateVehicles[vehicle].plate)
-            TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, fakePlateVehicles[vehicle].plate)
-            return
-        end
-    end
-
     if not isFakePlateOnVehicle(vehPlate) then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.does_not_have_fakeplate"), 'error') end
 
     local originalPlate = getPlateFromFakePlate(vehPlate)
     if not originalPlate then return end
 
-    MySQL.update('UPDATE player_vehicles set fakeplate = ? WHERE plate = ?',{NULL, originalPlate})
+    MySQL.update('UPDATE player_vehicles set fakeplate = ? WHERE plate = ?',{nil, originalPlate})
 
     -- Transfer trunk/ glovebox items
 	MySQL.update('UPDATE trunkitems SET plate = ? WHERE plate = ?', {originalPlate, vehPlate})
@@ -123,15 +98,8 @@ end)
 
 -- Callbacks
 
-QBCore.Functions.CreateCallback('brazzers-fakeplates:server:checkPlateStatus', function(_, cb, vehPlate, vehicle)
+QBCore.Functions.CreateCallback('brazzers-fakeplates:server:checkPlateStatus', function(_, cb, vehPlate)
     local retval = false
-
-    if fakePlateVehicles[vehicle] then
-        if fakePlateVehicles[vehicle].fakeplate then
-            retval = true
-        end
-    end
-
     local result = MySQL.query.await('SELECT fakeplate FROM player_vehicles WHERE fakeplate = ?', { vehPlate })
     if result then
         for _, v in pairs(result) do

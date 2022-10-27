@@ -102,7 +102,7 @@ CreateThread(function()
                         else
                             hasFakePlate = false
                         end
-                    end, closestPlate, vehicle)
+                    end, closestPlate)
                 end
                 if not inRange then
                     Wait(3000)
