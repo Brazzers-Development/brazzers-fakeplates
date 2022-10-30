@@ -1,0 +1,1 @@
+	["fakeplate"] 		 	 	 		 = {["name"] = "fakeplate",         		["label"] = "Fake Plate Kit",			["weight"] = 0, 		["type"] = "item", 		["image"] = "image1.png", 				["unique"] = true,     ["useable"] = true, 	["shouldClose"] = true,   	["combinable"] = nil,   ["description"] = "Use on a vehicle to alter its plate or change it back - 1 time use.."},

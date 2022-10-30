@@ -6,6 +6,7 @@ Very simple persistent fake plate script. I didn't see one made so here you go
 Preview: [SOON]
 
 ## Installation
+If you're to lazy to do this, I included the drag and drop of qb-garages server.lua in the files lazy fuck
 Locate your qb-garage:server:spawnVehicle callback in your qb-garages and replace with the one below: 
 ```lua
 QBCore.Functions.CreateCallback('qb-garage:server:spawnvehicle', function (source, cb, vehInfo, coords, warp)
