@@ -3,7 +3,7 @@
 ## General Setup
 Very simple persistent fake plate script. I didn't see one made so here you go
 
-Preview: [SOON]
+Preview: https://www.youtube.com/watch?v=PsGh2FnSM1o
 
 ## Installation
 If you're to lazy to do this, I included the drag and drop of qb-garages server.lua in the files lazy fuck
