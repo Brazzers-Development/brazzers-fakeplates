@@ -31,7 +31,7 @@ local function getPlateFromFakePlate(fakeplate)
     if result then
         return result
     end
-end
+end exports("getPlateFromFakePlate", getPlateFromFakePlate)
 
 local function getFakePlateFromPlate(plate)
     local result = MySQL.scalar.await('SELECT fakeplate FROM player_vehicles WHERE plate = ?', {plate})
