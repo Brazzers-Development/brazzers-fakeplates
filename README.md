@@ -172,20 +172,58 @@ Locate qb-garage:server:spawnvehicle and replace with the code below
 ```lua
 QBCore.Functions.CreateCallback('qb-garage:server:spawnvehicle', function (source, cb, vehInfo, coords, warp)
     local veh = QBCore.Functions.SpawnVehicle(source, vehInfo.vehicle, coords, warp)
+    local plate = vehInfo.plate
     local hasFakePlate = exports['brazzers-fakeplates']:getFakePlateFromPlate(vehInfo.plate)
+    if hasFakePlate then plate = hasFakePlate end
 
     if not veh or not NetworkGetNetworkIdFromEntity(veh) then
         print('ISSUE HERE', veh, NetworkGetNetworkIdFromEntity(veh))
     end
     local vehProps = {}
-    local plate = vehInfo.plate
     local result = MySQL.query.await('SELECT mods FROM player_vehicles WHERE plate = ?', {plate})
     if result[1] then vehProps = json.decode(result[1].mods) end
     local netId = NetworkGetNetworkIdFromEntity(veh)
     OutsideVehicles[plate] = {netID = netId, entity = veh}
-    if hasFakePlate then SetVehicleNumberPlateText(veh, hasFakePlate) else SetVehicleNumberPlateText(veh, vehInfo.plate) end
+    if hasFakePlate then SetVehicleNumberPlateText(veh, plate) else SetVehicleNumberPlateText(veh, plate) end
+    TriggerClientEvent("vehiclekeys:client:SetOwner", source, plate)
     cb(netId, vehProps)
 end)
+```
+Locate UpdateSpawnedVehicle function in the client and replace with the code below
+```lua
+function UpdateSpawnedVehicle(spawnedVehicle, vehicleInfo, heading, garage, properties)
+    QBCore.Functions.SetVehicleProperties(spawnedVehicle, properties)
+    local plate = QBCore.Functions.GetPlate(spawnedVehicle)
+    if garage.useVehicleSpawner then
+        if plate then
+            OutsideVehicles[plate] = spawnedVehicle
+            TriggerServerEvent('qb-garages:server:UpdateOutsideVehicles', OutsideVehicles)
+        end
+        if FuelScript then
+            exports[FuelScript]:SetFuel(spawnedVehicle, 100)
+        else
+            exports['LegacyFuel']:SetFuel(spawnedVehicle, 100) -- Don't change this. Change it in the  Defaults to legacy fuel if not set in the config
+        end
+        TriggerEvent("vehiclekeys:client:SetOwner", plate)
+        TriggerServerEvent("qb-garage:server:UpdateSpawnedVehicle", plate, true)
+    else
+        if plate then
+            OutsideVehicles[plate] = spawnedVehicle
+            TriggerServerEvent('qb-garages:server:UpdateOutsideVehicles', OutsideVehicles)
+        end
+        if FuelScript then
+            exports[FuelScript]:SetFuel(spawnedVehicle, vehicleInfo.fuel)
+        else
+            exports['LegacyFuel']:SetFuel(spawnedVehicle, vehicleInfo.fuel) -- Don't change this. Change it in the  Defaults to legacy fuel if not set in the config
+        end
+        SetAsMissionEntity(spawnedVehicle)
+        ApplyVehicleDamage(spawnedVehicle, vehicleInfo)
+        TriggerServerEvent('qb-garage:server:updateVehicleState', 0, vehicleInfo.plate, vehicleInfo.garage)
+    end
+    SetEntityHeading(spawnedVehicle, heading)
+    SetAsMissionEntity(spawnedVehicle)
+    SetVehicleEngineOn(spawnedVehicle, true, true)
+end
 ```
 Locate qb-garage:server:checkOwnership and replace with the code below
 ```lua
