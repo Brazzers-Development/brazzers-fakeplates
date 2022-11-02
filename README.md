@@ -315,6 +315,18 @@ QBCore.Functions.CreateCallback("qb-garage:server:GetVehicleProperties", functio
 end)
 ```
 
+## Exports Usage
+This gets the original plate from the fake plate. Input the fake plate number in the plate param
+```lua
+    local originalPlate = exports['brazzers-fakeplates']:getPlateFromFakePlate(plate)
+    if originalPlate then plate = originalPlate end
+```
+This gets the fake plate from the original plate. Input the original plate number in the plate param
+```lua
+    local fakePlate = exports['brazzers-fakeplates']:getFakePlateFromPlate(plate)
+    if fakePlate then plate = fakePlate end
+```
+
 ## Features
 1. Persistent Fake Plates ( Saves through garages )
 2. Synced Plate Changing
