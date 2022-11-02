@@ -26,6 +26,7 @@ local function isFakePlateOnVehicle(plate)
     end
 end exports("isFakePlateOnVehicle", isFakePlateOnVehicle)
 
+-- THIS GETS THE ORIGINAL PLATE FROM THE FAKE PLATE
 local function getPlateFromFakePlate(fakeplate)
     local result = MySQL.scalar.await('SELECT plate FROM player_vehicles WHERE fakeplate = ?', {fakeplate})
     if result then
@@ -33,6 +34,7 @@ local function getPlateFromFakePlate(fakeplate)
     end
 end exports("getPlateFromFakePlate", getPlateFromFakePlate)
 
+-- THIS GETS THE FAKEPLATE FROM THE ORIGINAL PLATE
 local function getFakePlateFromPlate(plate)
     local result = MySQL.scalar.await('SELECT fakeplate FROM player_vehicles WHERE plate = ?', {plate})
     if result then

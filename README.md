@@ -180,7 +180,7 @@ QBCore.Functions.CreateCallback('qb-garage:server:spawnvehicle', function (sourc
         print('ISSUE HERE', veh, NetworkGetNetworkIdFromEntity(veh))
     end
     local vehProps = {}
-    local result = MySQL.query.await('SELECT mods FROM player_vehicles WHERE plate = ?', {plate})
+    local result = MySQL.query.await('SELECT mods FROM player_vehicles WHERE plate = ?', {vehInfo.plate})
     if result[1] then vehProps = json.decode(result[1].mods) end
     local netId = NetworkGetNetworkIdFromEntity(veh)
     OutsideVehicles[plate] = {netID = netId, entity = veh}
@@ -299,6 +299,19 @@ QBCore.Functions.CreateCallback("qb-garage:server:checkOwnership", function(sour
             end
         end)
     end
+end)
+```
+Locate the qb-garage:server:GetVehicleProperties callback and replace with the one below
+```lua
+QBCore.Functions.CreateCallback("qb-garage:server:GetVehicleProperties", function(source, cb, plate)
+    local properties = {}
+    local hasFakePlate = exports['brazzers-fakeplates']:getFakePlateFromPlate(plate)
+    if hasFakePlate then plate = hasFakePlate end
+    local result = MySQL.query.await('SELECT mods FROM player_vehicles WHERE plate = ?', {plate})
+    if result[1] then
+        properties = json.decode(result[1].mods)
+    end
+    cb(properties)
 end)
 ```
 
