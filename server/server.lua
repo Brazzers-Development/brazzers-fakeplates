@@ -57,6 +57,7 @@ RegisterNetEvent('brazzers-fakeplates:server:usePlate', function(vehicle, vehPla
         TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, newPlate)
         TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, newPlate)
         Player.Functions.RemoveItem('fakeplate', 1)
+        TriggerClientEvent('inventory:client:ItemBox', src,  QBCore.Shared.Items["fakeplate"], 'remove')
         return
     end
 
@@ -89,6 +90,9 @@ RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehicle, veh
     -- Transfer trunk/ glovebox items
 	MySQL.update('UPDATE trunkitems SET plate = ? WHERE plate = ?', {originalPlate, vehPlate})
 	MySQL.update('UPDATE gloveboxitems SET plate = ? WHERE plate = ?', {originalPlate, vehPlate})
+
+    Player.Functions.AddItem('fakeplate', 1)
+    TriggerClientEvent('inventory:client:ItemBox', src,  QBCore.Shared.Items["fakeplate"], 'add')
 
     TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, originalPlate)
     if hasKeys then
