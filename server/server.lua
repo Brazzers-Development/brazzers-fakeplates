@@ -77,7 +77,8 @@ end)
 
 RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehicle, vehPlate, hasKeys)
     local src = source
-    if not src then return end
+    local Player = QBCore.Functions.GetPlayer(src)
+    if not Player then return end
     if not vehicle or not vehPlate then return end
 
     if not isFakePlateOnVehicle(vehPlate) then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.does_not_have_fakeplate"), 'error') end
