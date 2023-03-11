@@ -32,13 +32,22 @@ QBCore.Functions.CreateCallback('qb-garage:server:spawnvehicle', function (sourc
     local plate = vehInfo.plate
     local veh = QBCore.Functions.SpawnVehicle(source, vehInfo.vehicle, coords, warp)
     local hasFakePlate = exports['brazzers-fakeplates']:getFakePlateFromPlate(plate)
-    if hasFakePlate then SetVehicleNumberPlateText(veh, hasFakePlate) else SetVehicleNumberPlateText(veh, plate) end
     SetEntityHeading(veh, coords.w)
+
     local vehProps = {}
     local result = MySQL.query.await('SELECT mods FROM player_vehicles WHERE plate = ?', {plate})
     if result[1] then vehProps = json.decode(result[1].mods) end
     local netId = NetworkGetNetworkIdFromEntity(veh)
     OutsideVehicles[plate] = {netID = netId, entity = veh}
+
+    if hasFakePlate then 
+        SetVehicleNumberPlateText(veh, hasFakePlate)
+        TriggerClientEvent("vehiclekeys:client:SetOwner", source, hasFakePlate)
+    else 
+        SetVehicleNumberPlateText(veh, plate)
+        TriggerClientEvent("vehiclekeys:client:SetOwner", source, plate)
+    end
+    
     cb(netId, vehProps)
 end)
 ```
@@ -52,7 +61,7 @@ QBCore.Functions.CreateCallback("qb-garage:server:checkOwnership", function(sour
             if result[1] then
                 cb(true)
             else
-                MySQL.query('SELECT * FROM player_vehicles WHERE fakeplate = ? AND citizenid = ?',{plate, pData.PlayerData.citizenid}, function(fakeplate)
+                MySQL.query('SELECT * FROM player_vehicles WHERE fakeplate = ? AND citizenid = ?', {plate, pData.PlayerData.citizenid}, function(fakeplate)
                     if fakeplate[1] then
                         cb(true)
                     else
@@ -68,16 +77,16 @@ QBCore.Functions.CreateCallback("qb-garage:server:checkOwnership", function(sour
                 if hasHouseKey then
                     cb(true)
                 else
-                    MySQL.query('SELECT * FROM player_vehicles WHERE fakeplate = ? AND citizenid = ?',{plate, pData.PlayerData.citizenid}, function(fakeplate)
-                        if fakeplate[1] then
-                            cb(true)
-                        else
-                            cb(false)
-                        end
-                    end)
+                    cb(false)
                 end
             else
-                cb(false)
+                MySQL.query('SELECT * FROM player_vehicles WHERE fakeplate = ?', {plate}, function(fakeplate)
+                    if fakeplate[1] then
+                        cb(true)
+                    else
+                        cb(false)
+                    end
+                end)
             end
         end)
     elseif type == "gang" then        --Gang garages only for gang members cars (for sharing)
@@ -96,19 +105,25 @@ QBCore.Functions.CreateCallback("qb-garage:server:checkOwnership", function(sour
                     cb(false)
                 end
             else
-                cb(false)
+                MySQL.query('SELECT * FROM player_vehicles WHERE fakeplate = ?', {plate}, function(fakeplate)
+                    if fakeplate[1] then
+                        cb(true)
+                    else
+                        cb(false)
+                    end
+                end)
             end
         end)
     else                            --Job garages only for cars that are owned by someone (for sharing and service) or only by player depending of config
         local shared = ''
-        if not SharedGarages then
+        if not Config["SharedGarages"] then
             shared = " AND citizenid = '"..pData.PlayerData.citizenid.."'"
         end
         MySQL.query('SELECT * FROM player_vehicles WHERE plate = ?'..shared, {plate}, function(result)
             if result[1] then
                 cb(true)
             else
-                MySQL.query('SELECT * FROM player_vehicles WHERE fakeplate = ?',{plate}, function(fakeplate)
+                MySQL.query('SELECT * FROM player_vehicles WHERE fakeplate = ?'..shared, {plate}, function(fakeplate)
                     if fakeplate[1] then
                         cb(true)
                     else
@@ -127,7 +142,7 @@ RegisterNetEvent('qb-garage:server:updateVehicle', function(state, fuel, engine,
         if owned then
             if state == 0 or state == 1 or state == 2 then                                          --Check state value
                 if type ~= "house" then
-                    if Garages[garage] then
+                    if Config.Garages[garage] then                                                             --Check if garage is existing
                         local hasFakePlate = exports['brazzers-fakeplates']:isFakePlateOnVehicle(plate)
                         if hasFakePlate then
                             --Check if garage is existing
