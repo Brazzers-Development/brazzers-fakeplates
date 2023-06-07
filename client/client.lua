@@ -30,7 +30,7 @@ RegisterNetEvent('brazzers-fakeplates:client:usePlate', function(plate)
             anim = 'machinic_loop_mechandplayer',
             flags = 1,
         }, {}, {}, function()
-            TriggerServerEvent('brazzers-fakeplates:server:usePlate', vehicle, currentPlate, plate, hasKeys)
+            TriggerServerEvent('brazzers-fakeplates:server:usePlate', VehToNet(vehicle), currentPlate, plate, hasKeys)
             ClearPedTasks(ped)
         end, function()
             ClearPedTasks(ped)
@@ -63,22 +63,12 @@ RegisterNetEvent('brazzers-fakeplates:client:removePlate', function()
             anim = 'machinic_loop_mechandplayer',
             flags = 1,
         }, {}, {}, function()
-            TriggerServerEvent('brazzers-fakeplates:server:removePlate', vehicle, currentPlate, hasKeys)
+            TriggerServerEvent('brazzers-fakeplates:server:removePlate', VehToNet(vehicle), currentPlate, hasKeys)
             ClearPedTasks(ped)
         end, function()
             ClearPedTasks(ped)
         end)
     end
-end)
-
--- Sync Nets
-
-RegisterNetEvent('brazzers-fakeplates:client:syncNewPlate', function(vehicle, plate)
-    SetVehicleNumberPlateText(vehicle, plate)
-end)
-
-RegisterNetEvent('brazzers-fakeplates:client:syncKeys', function(plate)
-    TriggerEvent("vehiclekeys:client:SetOwner", plate)
 end)
 
 -- Threads

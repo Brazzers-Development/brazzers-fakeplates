@@ -44,18 +44,19 @@ end exports("getFakePlateFromPlate", getFakePlateFromPlate)
 
 -- Net Events
 
-RegisterNetEvent('brazzers-fakeplates:server:usePlate', function(vehicle, vehPlate, newPlate, hasKeys)
+RegisterNetEvent('brazzers-fakeplates:server:usePlate', function(vehNetID, vehPlate, newPlate, hasKeys)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
-    if not vehicle or not vehPlate or not newPlate then return end
+    if not vehNetID or not vehPlate or not newPlate then return end
+    local vehicle = NetworkGetEntityFromNetworkId(vehNetID)
 
     if isFakePlateOnVehicle(vehPlate) then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.already_has_plate"), 'error') end
     if not isVehicleOwned(vehPlate) then
         if not hasKeys then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.no_keys"), 'error') end
 
-        TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, newPlate)
-        TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, newPlate)
+        SetVehicleNumberPlateText(vehicle, newPlate)
+        TriggerClientEvent('vehiclekeys:client:SetOwner', src, newPlate)
         Player.Functions.RemoveItem('fakeplate', 1)
         TriggerClientEvent('inventory:client:ItemBox', src,  QBCore.Shared.Items["fakeplate"], 'remove')
         return
@@ -66,20 +67,21 @@ RegisterNetEvent('brazzers-fakeplates:server:usePlate', function(vehicle, vehPla
 	MySQL.update('UPDATE trunkitems SET plate = ? WHERE plate = ?', {newPlate, vehPlate})
 	MySQL.update('UPDATE gloveboxitems SET plate = ? WHERE plate = ?', {newPlate, vehPlate})
 
-    TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, newPlate)
+    SetVehicleNumberPlateText(vehicle, newPlate)
 
     Player.Functions.RemoveItem('fakeplate', 1)
     TriggerClientEvent('inventory:client:ItemBox', src,  QBCore.Shared.Items["fakeplate"], 'remove')
     if hasKeys then
-        TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, newPlate)
+        TriggerClientEvent('vehiclekeys:client:SetOwner', src, newPlate)
     end
 end)
 
-RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehicle, vehPlate, hasKeys)
+RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehNetID, vehPlate, hasKeys)
     local src = source
     local Player = QBCore.Functions.GetPlayer(src)
     if not Player then return end
-    if not vehicle or not vehPlate then return end
+    if not vehNetID or not vehPlate then return end
+    local vehicle = NetworkGetEntityFromNetworkId(vehNetID)
 
     if not isFakePlateOnVehicle(vehPlate) then return TriggerClientEvent('QBCore:Notify', src, Lang:t("error.does_not_have_fakeplate"), 'error') end
 
@@ -95,9 +97,9 @@ RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehicle, veh
     Player.Functions.AddItem('fakeplate', 1)
     TriggerClientEvent('inventory:client:ItemBox', src,  QBCore.Shared.Items["fakeplate"], 'add')
 
-    TriggerClientEvent('brazzers-fakeplates:client:syncNewPlate', -1, vehicle, originalPlate)
+    SetVehicleNumberPlateText(vehicle, originalPlate)
     if hasKeys then
-        TriggerClientEvent('brazzers-fakeplates:client:syncKeys', src, originalPlate)
+        TriggerClientEvent('vehiclekeys:client:SetOwner', src, originalPlate)
     end
 end)
 
