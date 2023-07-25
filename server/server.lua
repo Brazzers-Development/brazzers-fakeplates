@@ -71,6 +71,11 @@ RegisterNetEvent('brazzers-fakeplates:server:usePlate', function(vehNetID, vehPl
 
     Player.Functions.RemoveItem('fakeplate', 1)
     TriggerClientEvent('inventory:client:ItemBox', src,  QBCore.Shared.Items["fakeplate"], 'remove')
+
+    if GetResourceState("rhd_garage") ~= "missing" then
+        exports.rhd_garage:updatePlateOutsideVehicle(vehPlate, newPlate)
+    end
+
     if hasKeys then
         TriggerClientEvent('vehiclekeys:client:SetOwner', src, newPlate)
     end
@@ -98,6 +103,11 @@ RegisterNetEvent('brazzers-fakeplates:server:removePlate', function(vehNetID, ve
     TriggerClientEvent('inventory:client:ItemBox', src,  QBCore.Shared.Items["fakeplate"], 'add')
 
     SetVehicleNumberPlateText(vehicle, originalPlate)
+    
+    if GetResourceState("rhd_garage") ~= "missing" then
+        exports.rhd_garage:updatePlateOutsideVehicle(vehPlate, originalPlate)
+    end
+
     if hasKeys then
         TriggerClientEvent('vehiclekeys:client:SetOwner', src, originalPlate)
     end
